@@ -10,16 +10,43 @@ public class Celilmete_Caglasen {
     public static String[] gens = new String[10];
     public static String[] motifs = new String[10];
     public static double[][] profile = new double[4][10];
-    public static double[][] resMatrix = new double[10][491];
 
     public static void main(String args[]){
         int k = 10;
         createFile();
 //        writeRandomBasesToFile();
         readGens();
-        randomizedMotifSearch(k);
+//        randomizedMotifSearch(k);
+        getRandomMotif(k);
+        System.out.println(gens.length);
+        printProfile();
+        printMotifs();
+        getProfile();
+        getBestKMers(k);
+        printProfile();
+        printMotifs();
+        getProfile();
+        getBestKMers(k);
+        printProfile();
+        printMotifs();
 
+    }
 
+    public static void printProfile() {
+        for (int i = 0; i < profile.length; i++) {
+            for (int j = 0; j < profile[i].length; j++) {
+                System.out.printf("%.1f ", profile[i][j]);
+            }
+            System.out.println();
+        }
+    }
+
+    public static void printMotifs() {
+        System.out.println("---------");
+        for (int i = 0; i < motifs.length; i++) {
+            System.out.println(motifs[i]);
+        }
+        System.out.println("---------");
     }
 
     public static void randomizedMotifSearch(int k) {
@@ -30,7 +57,7 @@ public class Celilmete_Caglasen {
         int counter = 0;
         while (true) {
             while (true) {
-                int score = getMotifs(k);
+                int score =2;
                 if (tempScore == score)
                     break;
                 else tempScore = score;
@@ -70,26 +97,6 @@ public class Celilmete_Caglasen {
         }
     }
 
-    /*************************************
-    * this function calculates resMatrix */
-    public static void getResMatrix() {
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j <491 ; j++) {
-                double temp = 1;
-                String tempString = gens[i].substring(j, j + 10);
-                for (int k = 0; k < 10; k++) {
-                    switch (tempString.charAt(k)) {
-                        case 'A' -> temp *= profile[0][k];
-                        case 'C' -> temp *= profile[1][k];
-                        case 'G' -> temp *= profile[2][k];
-                        case 'T' -> temp *= profile[3][k];
-                    }
-                }
-                resMatrix[i][j] = temp;
-            }
-        }
-    }
-
     /***********************************************
      * This function calculates the profile matrix */
     public static void getProfile() {
@@ -108,50 +115,41 @@ public class Celilmete_Caglasen {
 
     }
 
-    /***************************************************************
-    * This function calculates profile matrix and gets next motifs */
-    public static int getMotifs(int k) {
-        getProfile();
-        getResMatrix();
-        int score = 0;
-        double debug = 0;
-        for (int i = 0; i < 10; i++) {
-            int lastIndex = 0;
-            double lastVal = 0;
-            for (int j = 0; j < 491; j++) {
-                if (resMatrix[i][j] > lastVal) {
-                    lastVal = resMatrix[i][j];
-                    lastIndex = j;
-                }
-            }
-            debug += lastVal;
-            motifs[i] = gens[i].substring(lastIndex, lastIndex + k);
-        }
-//        System.out.println(debug);
-        debug = 0;
-        // calculation of the score
-        ArrayList<Integer> nums = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            int numa = 0, numc = 0, numg = 0, numt = 0;
-            for (int j = 0; j < 10; j++) {
-                switch (motifs[i].charAt(j)) {
-                    case 'A' -> numa++;
-                    case 'C' -> numc++;
-                    case 'G' -> numg++;
-                    case 'T' -> numt++;
-                }
-            }
-            nums.add(numa);nums.add(numc);nums.add(numg);nums.add(numt);
-            Collections.sort(nums);
-            score += 10 - nums.get(3);
-            nums.clear();
-        }
-
-        return score;
+    public static int baseToIndex(char base) {
+        return "ACGT".indexOf(base);
     }
 
+    public static char indexToBase(int i) {
+        return "ACGT".charAt(i);
+    }
+
+    public static double getProb(int k, String kmer) {
+        double prob = 1;
+        for (int i = 0; i < kmer.length(); i++) {
+            prob *= profile[baseToIndex(kmer.charAt(i))][i];
+        }
+        return prob;
+    }
+
+    public static void  getBestKMers(int k) {
+        for (int i = 0; i < gens.length; i++) {
+            double bestVal = -1;
+            String bestKmer = "";
+            for (int j = 0; j < gens[i].length() - k + 1; j++) {
+                String kmer = gens[i].substring(j, j + k);
+                double prob = getProb(k, kmer);
+                if (bestVal < getProb(k, kmer)) {
+                    bestKmer = kmer;
+                    bestVal = prob;
+                }
+            }
+            motifs[i] = bestKmer;
+        }
+    }
+
+
     /************************************************************************
-    * This function gets motifs starting from random positions in each line */
+     * This function gets motifs starting from random positions in each line */
     public static void getRandomMotif(int k) {
         int range = 500 - k;
         Random random = new Random();
@@ -164,13 +162,13 @@ public class Celilmete_Caglasen {
     }
 
     /****************************************************************************************
-    * _4RandomPositions                                                                     *
-    * This function returns an ArrayList of 4 distinct random numbers                       *
-    * Distinctivity is important to not to mutate the already mutated position              *
-    * Firstly we create temporary list of numbers from 1 to 10                              *
-    * We shuffle it                                                                         *
-    * Then we insert the first 4 of them into the randomPositions list                      *
-    ****************************************************************************************/
+     * _4RandomPositions                                                                     *
+     * This function returns an ArrayList of 4 distinct random numbers                       *
+     * Distinctivity is important to not to mutate the already mutated position              *
+     * Firstly we create temporary list of numbers from 1 to 10                              *
+     * We shuffle it                                                                         *
+     * Then we insert the first 4 of them into the randomPositions list                      *
+     ****************************************************************************************/
     public static ArrayList<Integer> _4RandomPositions(){
         ArrayList<Integer> list = new ArrayList<Integer>();
         for (int i=0; i<10; i++) {
@@ -185,9 +183,9 @@ public class Celilmete_Caglasen {
     }
 
     /****************************************************************************************
-    * createFile                                                                            *
-    * This function creates a txt file if there is no file                                  *
-    ****************************************************************************************/
+     * createFile                                                                            *
+     * This function creates a txt file if there is no file                                  *
+     ****************************************************************************************/
     public static void createFile(){
         try {
             file = new File("randomMotif.txt");
@@ -203,38 +201,38 @@ public class Celilmete_Caglasen {
     }
 
     /****************************************************************************************
-    * writeRandomBasesToFile                                                                *
-    * This function is very important & has a key role to this program                      *
-    * Firstly, we create an array of 10 strings to store the mutated versions of k-mers     *
-    * In a for loop we create & store the same DNA strings that are identical to each other *
-    * We store the original k-mer in the 0th index of mutatedKMersStrings array             *
-    * Then we copy this original k-mer to the remaining indexes                             *
-    * Strings are immutable in Java, so we will use StringBuilder class to mutate the bases *
-    * We have 10 DNA strings to mutate(1 String for each line)-> for loop will iterate to 10*
-    * We'll use _4RandomPositions function to get 4 distinct positions to mutate the DNA    *
-    * We put the return value of _4RandomPositions function to mutatedPositions list        *
-    * 4 mutations are needed so the for loop will iterate through 4                         *
-    * We will get a random index from bases string then we'll get the char at this position *
-    * We get a random base to replace with, put the return value to randomBase              *
-    * Now we have to find a random DNA index to mutate                                      *
-    * We get the current index element from mutatedPositions list                           *
-    * That is the base that we will replace with randomBase                                 *
-    * But this base may be same with the randomBase, we have to control before mutating it  *
-    * If they're the same, we change the randomBase with the next base in the bases string  *
-    * Then we mutate the stringBuilder's base at randomPosition with randomBase             *
-    * Then we update the element of mutatedKMerStrings by converting stringBuilder to string*
-    * Then we start to write to file                                                        *
-    * We have 10 lines and in each line we have 500 bases                                   *
-    * We find a random starting index from 0 to 490 to insert the mutated DNA               *
-    * We assign the return value to randStartingIndex                                       *
-    * We iterate through the loop and insert randomly selected bases one by one             *
-    * But when we came to the randStartingIndex, we insert the mutated DNA here             *
-    * We put a newline character at the end of 500 bases.                                   *
-    * We close the file and catch exceptions                                                *
-    *
-    *
-    *
-    ****************************************************************************************/
+     * writeRandomBasesToFile                                                                *
+     * This function is very important & has a key role to this program                      *
+     * Firstly, we create an array of 10 strings to store the mutated versions of k-mers     *
+     * In a for loop we create & store the same DNA strings that are identical to each other *
+     * We store the original k-mer in the 0th index of mutatedKMersStrings array             *
+     * Then we copy this original k-mer to the remaining indexes                             *
+     * Strings are immutable in Java, so we will use StringBuilder class to mutate the bases *
+     * We have 10 DNA strings to mutate(1 String for each line)-> for loop will iterate to 10*
+     * We'll use _4RandomPositions function to get 4 distinct positions to mutate the DNA    *
+     * We put the return value of _4RandomPositions function to mutatedPositions list        *
+     * 4 mutations are needed so the for loop will iterate through 4                         *
+     * We will get a random index from bases string then we'll get the char at this position *
+     * We get a random base to replace with, put the return value to randomBase              *
+     * Now we have to find a random DNA index to mutate                                      *
+     * We get the current index element from mutatedPositions list                           *
+     * That is the base that we will replace with randomBase                                 *
+     * But this base may be same with the randomBase, we have to control before mutating it  *
+     * If they're the same, we change the randomBase with the next base in the bases string  *
+     * Then we mutate the stringBuilder's base at randomPosition with randomBase             *
+     * Then we update the element of mutatedKMerStrings by converting stringBuilder to string*
+     * Then we start to write to file                                                        *
+     * We have 10 lines and in each line we have 500 bases                                   *
+     * We find a random starting index from 0 to 490 to insert the mutated DNA               *
+     * We assign the return value to randStartingIndex                                       *
+     * We iterate through the loop and insert randomly selected bases one by one             *
+     * But when we came to the randStartingIndex, we insert the mutated DNA here             *
+     * We put a newline character at the end of 500 bases.                                   *
+     * We close the file and catch exceptions                                                *
+     *
+     *
+     *
+     ****************************************************************************************/
     public static void writeRandomBasesToFile(){
         int kmer=10;
         Random r = new Random();
