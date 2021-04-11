@@ -5,21 +5,35 @@ import java.util.*;
 
 
 public class Celilmete_Caglasen {
+
+    public static int k = 10;
+
     public static String bases="ATGC";
     public static File file;
     public static String[] gens = new String[10];
     public static String[] motifs = new String[10];
-    public static double[][] profile = new double[4][10];
+    public static double[][] profile = new double[4][k];
+    public static double[][] profile_Gibbs = new double[4][k];
+    public static int randLineIndex;
+    public static String deletedLine;
+    public static double[] probabilitiesOfKMersOfTheDeletedLine =new double[500-k+1];
+    public static double[] bestProbabilityAndIndexOfDeletedLine =new double[2];
+
+    public static double[][] probabilitiesOfKMersMatrix =new double[10][500-k+1];
+    public static double[][] bestProbabilities= new double[10][2];
+
+    public static int[][] countMatrix = new int[4][10];
 
     public static void main(String args[]){
-        int k = 10;
+
         createFile();
 //        writeRandomBasesToFile();
         readGens();
         System.out.println(randomizedMotifSearch(k));
         printMotifs();
 
-
+        System.out.println("Gibbs Sampler:");
+        gibbsSampler(k);
 
     }
 
@@ -32,12 +46,213 @@ public class Celilmete_Caglasen {
         }
     }
 
+
+    public static void printCounts() {
+        String genes="ACGT";
+        for (int i = 0; i < countMatrix.length; i++) {
+            System.out.print(genes.charAt(i)+ ": ");
+            for (int j = 0; j < countMatrix[i].length; j++) {
+                System.out.printf("%d ", countMatrix[i][j]);
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    public static void printGibbsMotifs() {
+        System.out.println("---------");
+        for (int i = 0; i < motifs.length; i++) {
+            if(i==randLineIndex) {System.out.println("**********"); continue;}
+            System.out.println(motifs[i]);
+        }
+        System.out.println("---------");
+    }
+
     public static void printMotifs() {
         System.out.println("---------");
         for (int i = 0; i < motifs.length; i++) {
             System.out.println(motifs[i]);
         }
         System.out.println("---------");
+    }
+
+
+    public static void gibbsSampler(int k){
+        while (true){
+            getRandomMotif(k);
+            emptyOneRandomLine();
+            printGibbsMotifs();
+            getCountMatrix();
+            printCounts();
+            applyLaplace();
+            printCounts();
+            generateProfileMatrix();
+        /*
+        calculateKMerProbabilityOfDeletedLine();
+        printKMerProbabilitiesOfTheDeletedLine();
+        findBestProbabilityOfTheDeletedLine();
+
+         */
+            putTheDeletedLineBackToMotifMatrix();
+            calculateKMerProbabilities();
+            printKMerProbabilities();
+            findBestProbabilities();
+            printBestProbabilities();
+            updateMotifInTheDeletedLine();
+            //calculateScore();
+        }
+    }
+
+    private static void updateMotifInTheDeletedLine() {
+        int index = (int)bestProbabilityAndIndexOfDeletedLine[1];
+        motifs[randLineIndex]= gens[randLineIndex].substring(index,index+10);
+    }
+
+    private static void putTheDeletedLineBackToMotifMatrix() {
+        gens[randLineIndex]=deletedLine;
+    }
+
+    private static void findBestProbabilityOfTheDeletedLine() {
+        for (int i = 0; i < probabilitiesOfKMersOfTheDeletedLine.length ; i++) {
+            double currBestProb = probabilitiesOfKMersOfTheDeletedLine[i];
+            if(probabilitiesOfKMersOfTheDeletedLine[i] > currBestProb){
+                currBestProb = probabilitiesOfKMersOfTheDeletedLine[i];
+                bestProbabilityAndIndexOfDeletedLine[1]=i;
+            }
+            probabilitiesOfKMersOfTheDeletedLine[0]=currBestProb;
+        }
+        System.out.println("Best probablity of the deleted line: "+ probabilitiesOfKMersOfTheDeletedLine[0]+
+                "Index of this probability: " +bestProbabilityAndIndexOfDeletedLine[1]);
+    }
+
+    private static void printKMerProbabilitiesOfTheDeletedLine() {
+
+        for (int j = 0; j < probabilitiesOfKMersOfTheDeletedLine.length; j++) {
+            System.out.print(probabilitiesOfKMersOfTheDeletedLine[j]+ " ");
+        }
+        System.out.println();
+
+    }
+
+    private static void calculateKMerProbabilityOfDeletedLine() {
+        double probOfKmer=1;
+            for (int j = 0; j < probabilitiesOfKMersOfTheDeletedLine.length ; j++) {
+                probOfKmer=1;
+                for (int l = 0; l <k ; l++) {
+                    switch (deletedLine.charAt(j+l)){ //j+l olaiblir mi?
+                        case 'A' -> probOfKmer *= profile_Gibbs[0][l];
+                        case 'C' -> probOfKmer *= profile_Gibbs[1][l];
+                        case 'G' -> probOfKmer *= profile_Gibbs[2][l];
+                        case 'T' -> probOfKmer *= profile_Gibbs[3][l];
+                    }
+                }
+                probabilitiesOfKMersOfTheDeletedLine[j] = probOfKmer;
+            }
+
+    }
+
+    private static void printBestProbabilities() {
+        for (int i = 0; i <bestProbabilities.length ; i++) {
+            System.out.println(bestProbabilities[i][0] +" at index " +bestProbabilities[i][1]);
+        }
+    }
+
+    private static void findBestProbabilities() {
+        for (int i = 0; i < probabilitiesOfKMersMatrix.length ; i++) {
+            double currBestProb = probabilitiesOfKMersMatrix[i][0];
+            for (int j = 0; j < probabilitiesOfKMersMatrix[0].length; j++) {
+                if(probabilitiesOfKMersMatrix[i][j] > currBestProb){
+                    currBestProb = probabilitiesOfKMersMatrix[i][j];
+                    bestProbabilities[i][1]=j;
+                }
+            }
+            bestProbabilities[i][0]=currBestProb;
+
+        }
+    }
+
+    private static void printKMerProbabilities() {
+        for (int i = 0; i < probabilitiesOfKMersMatrix.length ; i++) {
+            for (int j = 0; j < probabilitiesOfKMersMatrix[0].length; j++) {
+                System.out.print(probabilitiesOfKMersMatrix[i][j]+ " ");
+            }
+            System.out.println();
+        }
+    }
+
+    private static void calculateKMerProbabilities() {
+        double probOfKmer=1;
+        for (int i = 0; i < probabilitiesOfKMersMatrix.length ; i++) {
+            //if(i==randLineIndex) continue;
+            for (int j = 0; j < probabilitiesOfKMersMatrix[0].length ; j++) {
+                probOfKmer=1;
+                for (int l = 0; l <k ; l++) {
+                    switch (gens[i].charAt(j+l)){ //j+l olaiblir mi?
+                        case 'A' -> probOfKmer *= profile_Gibbs[0][l];
+                        case 'C' -> probOfKmer *= profile_Gibbs[1][l];
+                        case 'G' -> probOfKmer *= profile_Gibbs[2][l];
+                        case 'T' -> probOfKmer *= profile_Gibbs[3][l];
+                    }
+                }
+                probabilitiesOfKMersMatrix[i][j] = probOfKmer;
+            }
+        }
+    }
+
+    private static void generateProfileMatrix() {
+        for (int i = 0; i <countMatrix.length; i++) { //countMatrix[i].length=number of columns
+            for (int j = 0; j < countMatrix[0].length; j++) {
+                profile_Gibbs[i][j]=countMatrix[i][j]*0.1;
+                System.out.printf("%.1f ", profile_Gibbs[i][j]);
+            }
+            System.out.println();
+        }
+    }
+
+    private static void applyLaplace() {
+        boolean zeroExistInTheCurrColumn=false;
+
+        for (int i = 0; i <countMatrix[0].length && !zeroExistInTheCurrColumn ; i++) { //countMatrix[i].length=number of columns
+            for (int j = 0; j <countMatrix.length &&!zeroExistInTheCurrColumn ; j++) {//countMatrix.length   =number of rows
+                if(countMatrix[j][i]==0){
+                    zeroExistInTheCurrColumn=true;
+                    break;
+                }
+            }
+        }
+
+        if(zeroExistInTheCurrColumn){
+            for (int i = 0; i <countMatrix.length; i++) { //countMatrix[i].length=number of columns
+                for (int j = 0; j < countMatrix[0].length; j++) {
+                    countMatrix[i][j]+=1;
+                }
+            }
+        }
+
+
+    }
+
+    private static void emptyOneRandomLine() {
+        Random random = new Random();
+        randLineIndex = random.nextInt(10);
+        deletedLine=gens[randLineIndex];
+        gens[randLineIndex] = "";
+
+    }
+
+    public static void getCountMatrix() {
+        countMatrix = new int[4][10];
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                if(j==randLineIndex) continue;
+                switch (motifs[j].charAt(i)) {
+                    case 'A' -> countMatrix[0][i] += 1;
+                    case 'C' -> countMatrix[1][i] += 1;
+                    case 'G' -> countMatrix[2][i] += 1;
+                    case 'T' -> countMatrix[3][i] += 1;
+                }
+            }
+        }
     }
 
     public static int randomizedMotifSearch(int k) {
@@ -145,6 +360,7 @@ public class Celilmete_Caglasen {
         }
     }
 
+
     /************************************************************************
      * This function gets motifs starting from random positions in each line */
     public static void getRandomMotif(int k) {
@@ -154,7 +370,7 @@ public class Celilmete_Caglasen {
 
         for (int i = 0; i < 10; i++) {
             position = random.nextInt(range);
-            motifs[i] = gens[i].substring(position,position+k);
+            motifs[i] = gens[i].substring(position,position+10);
         }
     }
 
