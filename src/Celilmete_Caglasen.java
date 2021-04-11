@@ -32,10 +32,30 @@ public class Celilmete_Caglasen {
         readGens();
         System.out.println(randomizedMotifSearch(k));
         printMotifs();
+        System.out.println(findConsensus());
 
         System.out.println("Gibbs Sampler:");
         gibbsSampler(k);
 
+    }
+
+    public static String findConsensus() {
+        getProfile();
+        double maxProb = 0;
+        String consensus = "";
+        char base = ' ';
+
+        for (int i = 0; i < profile[0].length; i++) {
+            for (int j = 0; j < profile.length; j++) {
+                if (profile[j][i] > maxProb) {
+                    maxProb = profile[j][i];
+                    base = indexToBase(j);
+                }
+            }
+            consensus += base;
+            maxProb = 0;
+        }
+        return consensus;
     }
 
     public static void printProfile() {
@@ -289,7 +309,7 @@ public class Celilmete_Caglasen {
             if(tempScore < bestScore) {
                 bestScore = tempScore;
                 bestMotifs = tempMotifs.clone();
-                count = 0;
+                count = 1;
             }
             else if (count % 50 == 0) {
                 return bestScore;
