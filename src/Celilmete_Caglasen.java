@@ -16,6 +16,7 @@ public class Celilmete_Caglasen {
     public static double[][] profile_Gibbs = new double[4][k];
     public static int randLineIndex;
     public static String deletedLine;
+    public static int bestProbabilityIndex;
     public static double[] probabilitiesOfKMersOfTheDeletedLine =new double[500-k+1];
     public static double[] bestProbabilityAndIndexOfDeletedLine =new double[2];
 
@@ -98,6 +99,34 @@ public class Celilmete_Caglasen {
     }
 
     public static int gibbsSampler(int k){
+
+        getRandomMotif(k);
+        int bestScore=score();
+        int count = 1;
+
+        while(true){
+            emptyOneRandomLine();
+            getCountMatrix();
+            applyLaplace();
+            generateProfileMatrix();
+            putTheDeletedLineBackToMotifMatrix();
+            calculateKMerProbabilities();
+            findBestProbabilities();
+            updateMotifInTheDeletedLine();
+            int tempScore=score();
+            if(tempScore<bestScore){
+                bestScore=tempScore;
+                count=1;
+            }else if(count%150==0){
+                return bestScore;
+            }else{
+                count++;
+            }
+        }
+
+
+
+        /*
         getRandomMotif(k);
         String[] bestMotifs = motifs.clone();
         int bestScore=score();
@@ -128,7 +157,7 @@ public class Celilmete_Caglasen {
                 bestScore=tempScore;
                 bestMotifs = tempMotifs.clone();
                 count=1;
-            }else if(count%50==0){
+            }else if(count%150==0){
                 return bestScore;
             }else{
                 motifs = bestMotifs.clone();
@@ -136,10 +165,14 @@ public class Celilmete_Caglasen {
             }
 
         }
+
+         */
+
+
     }
 
     private static void updateMotifInTheDeletedLine() {
-        int index = (int)bestProbabilityAndIndexOfDeletedLine[1];
+        int index = bestProbabilityIndex;
         motifs[randLineIndex]= gens[randLineIndex].substring(index,index+10);
     }
 
@@ -199,6 +232,9 @@ public class Celilmete_Caglasen {
                 if(probabilitiesOfKMersMatrix[i][j] > currBestProb){
                     currBestProb = probabilitiesOfKMersMatrix[i][j];
                     bestProbabilities[i][1]=j;
+                    if(randLineIndex==i){
+                        bestProbabilityIndex=j;
+                    }
                 }
             }
             bestProbabilities[i][0]=currBestProb;
