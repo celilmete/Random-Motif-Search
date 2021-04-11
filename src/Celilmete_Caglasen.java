@@ -28,11 +28,11 @@ public class Celilmete_Caglasen {
     public static void main(String args[]){
 
         createFile();
-//        writeRandomBasesToFile();
+        writeRandomBasesToFile();
         readGens();
-        System.out.println(randomizedMotifSearch(k));
+        System.out.println("Randomized MS Score: "+randomizedMotifSearch(k));
         printMotifs();
-        System.out.println(findConsensus());
+        System.out.println("Randomized MS Consensus: "+findConsensus());
 
         System.out.println("Gibbs Sampler:");
         gibbsSampler(k);
@@ -100,9 +100,10 @@ public class Celilmete_Caglasen {
 
     public static void gibbsSampler(int k){
         int currScore=9999;
-        while (true){
 
-            getRandomMotif(k);
+        getRandomMotif(k);
+
+        while (true){
             emptyOneRandomLine();
             printGibbsMotifs();
             getCountMatrix();
@@ -110,23 +111,25 @@ public class Celilmete_Caglasen {
             applyLaplace();
             printCounts();
             generateProfileMatrix();
-        /*
-        calculateKMerProbabilityOfDeletedLine();
-        printKMerProbabilitiesOfTheDeletedLine();
-        findBestProbabilityOfTheDeletedLine();
+            /*
+            calculateKMerProbabilityOfDeletedLine();
+            printKMerProbabilitiesOfTheDeletedLine();
+            findBestProbabilityOfTheDeletedLine();
 
-         */
+             */
             putTheDeletedLineBackToMotifMatrix();
             calculateKMerProbabilities();
-            printKMerProbabilities();
+            //printKMerProbabilities();
             findBestProbabilities();
-            printBestProbabilities();
+            //printBestProbabilities();
             updateMotifInTheDeletedLine();
             gibbsScore=score();
             if(gibbsScore<currScore){
                 currScore=gibbsScore;
                 continue;
             }else{
+                System.out.println("Gibbs Sampling  Score:"+gibbsScore);
+                System.out.println("Gibbs Sampling  Consensus: "+findConsensus());
                 break;
             }
         }
@@ -513,6 +516,7 @@ public class Celilmete_Caglasen {
             }
         }
         System.out.println("o: "+mutatedKMerStrings[0]);
+        System.out.println("Original String: " + mutatedKMerStrings[0]);
         StringBuilder stringBuilder = null;
 
         for (int i = 0; i <10 ; i++) {
