@@ -16,19 +16,10 @@ public class Celilmete_Caglasen {
         createFile();
 //        writeRandomBasesToFile();
         readGens();
-//        randomizedMotifSearch(k);
-        getRandomMotif(k);
-        System.out.println(gens.length);
-        printProfile();
+        System.out.println(randomizedMotifSearch(k));
         printMotifs();
-        getProfile();
-        getBestKMers(k);
-        printProfile();
-        printMotifs();
-        getProfile();
-        getBestKMers(k);
-        printProfile();
-        printMotifs();
+
+
 
     }
 
@@ -49,34 +40,41 @@ public class Celilmete_Caglasen {
         System.out.println("---------");
     }
 
-    public static void randomizedMotifSearch(int k) {
+    public static int randomizedMotifSearch(int k) {
         getRandomMotif(k);
-        int lastScore = 0;
-        int tempScore = 0;
-        String[] lastMotif= new String[10];
-        int counter = 0;
-        while (true) {
-            while (true) {
-                int score =2;
-                if (tempScore == score)
-                    break;
-                else tempScore = score;
-                counter++;
-            }
+        String[] bestMotifs = motifs.clone();
+        int bestScore = score();
+        int score;
+        int count = 1;
+        while (true){
             getRandomMotif(k);
-            if (lastScore == tempScore) {
-                counter += 1;
-                break;
-            }else if (lastScore > tempScore){
-                lastScore = tempScore;
-                counter = 0;
+            String[] tempMotifs = motifs.clone();
+            int tempScore = 99999;
+            while (true) {
+                getProfile();
+                getBestKMers(k);
+                score = score();
+                if (score < tempScore) {
+                    tempMotifs = motifs.clone();
+                    tempScore = score;
+                }
+                else {
+                    break;
+                }
+            }
+            if(tempScore < bestScore) {
+                bestScore = tempScore;
+                bestMotifs = tempMotifs.clone();
+                count = 0;
+            }
+            else if (count % 50 == 0) {
+                return bestScore;
+            }
+            else {
+                motifs = bestMotifs.clone();
+                count++;
             }
         }
-
-        for (int i = 0; i < 10; i++) {
-            System.out.println(motifs[i]);
-        }
-        System.out.println("with total score of " + lastScore);
 
     }
 
@@ -147,7 +145,6 @@ public class Celilmete_Caglasen {
         }
     }
 
-
     /************************************************************************
      * This function gets motifs starting from random positions in each line */
     public static void getRandomMotif(int k) {
@@ -157,8 +154,30 @@ public class Celilmete_Caglasen {
 
         for (int i = 0; i < 10; i++) {
             position = random.nextInt(range);
-            motifs[i] = gens[i].substring(position,position+10);
+            motifs[i] = gens[i].substring(position,position+k);
         }
+    }
+
+    public static int score() {
+        int score = 0;
+        for (int i = 0; i < motifs.length; i++) {
+            ArrayList<Integer> counts = new ArrayList<>();
+            int numa = 0, numc = 0, numg = 0, numt = 0;
+            for (int j = 0; j < motifs[i].length(); j++) {
+                switch (motifs[j].charAt(i)) {
+                    case 'A' -> numa++;
+                    case 'C' -> numc++;
+                    case 'G' -> numg++;
+                    case 'T' -> numt++;
+                }
+            }
+            counts.add(numa);counts.add(numc);counts.add(numg);counts.add(numt);
+            Collections.sort(counts);
+            score += 10 - counts.get(3);
+            counts.clear();
+        }
+
+        return score;
     }
 
     /****************************************************************************************
