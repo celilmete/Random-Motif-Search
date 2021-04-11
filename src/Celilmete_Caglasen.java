@@ -35,8 +35,8 @@ public class Celilmete_Caglasen {
         System.out.println("Randomized MS Consensus: "+findConsensus());
 
         System.out.println("Gibbs Sampler:");
-        gibbsSampler(k);
-
+        System.out.println("Gibbs Score: "+gibbsSampler(k));
+        System.out.println("Gibbs Consensus: "+findConsensus());
     }
 
     public static String findConsensus() {
@@ -98,42 +98,49 @@ public class Celilmete_Caglasen {
     }
 
 
-    public static void gibbsSampler(int k){
-        int currScore=9999;
-
+    public static int gibbsSampler(int k){
         getRandomMotif(k);
+        String[] bestMotifs = motifs.clone();
+        int bestScore=score();
+        int score;
+        int count = 1;
 
         while (true){
             emptyOneRandomLine();
-            printGibbsMotifs();
-            getCountMatrix();
-            printCounts();
-            applyLaplace();
-            printCounts();
-            generateProfileMatrix();
-            /*
-            calculateKMerProbabilityOfDeletedLine();
-            printKMerProbabilitiesOfTheDeletedLine();
-            findBestProbabilityOfTheDeletedLine();
-
-             */
-            putTheDeletedLineBackToMotifMatrix();
-            calculateKMerProbabilities();
-            //printKMerProbabilities();
-            findBestProbabilities();
-            //printBestProbabilities();
-            updateMotifInTheDeletedLine();
-            gibbsScore=score();
-            if(gibbsScore<currScore){
-                currScore=gibbsScore;
-                continue;
-            }else{
-                System.out.println("Gibbs Sampling  Score:"+gibbsScore);
-                System.out.println("Gibbs Sampling  Consensus: "+findConsensus());
-                break;
+            String[] tempMotifs = motifs.clone();
+            int tempScore=99999;
+            while (true){
+                getCountMatrix();
+                applyLaplace();
+                generateProfileMatrix();
+                putTheDeletedLineBackToMotifMatrix();
+                calculateKMerProbabilities();
+                findBestProbabilities();
+                updateMotifInTheDeletedLine();
+                score=score();
+                if(score<tempScore){
+                    tempMotifs = motifs.clone();
+                    tempScore = score;
+                }else {
+                    break;
+                }
             }
+            if(tempScore<bestScore){
+                bestScore=tempScore;
+                bestMotifs = tempMotifs.clone();
+                count=1;
+            }else if(count%50==0){
+                return bestScore;
+            }else{
+                motifs = bestMotifs.clone();
+                count++;
+            }
+
         }
     }
+
+
+
 
     private static void updateMotifInTheDeletedLine() {
         int index = (int)bestProbabilityAndIndexOfDeletedLine[1];
@@ -235,9 +242,9 @@ public class Celilmete_Caglasen {
         for (int i = 0; i <countMatrix.length; i++) { //countMatrix[i].length=number of columns
             for (int j = 0; j < countMatrix[0].length; j++) {
                 profile_Gibbs[i][j]=countMatrix[i][j]*0.1;
-                System.out.printf("%.1f ", profile_Gibbs[i][j]);
+                //System.out.printf("%.1f ", profile_Gibbs[i][j]);
             }
-            System.out.println();
+            //System.out.println();
         }
     }
 
