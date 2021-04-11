@@ -40,7 +40,7 @@ public class Celilmete_Caglasen {
     }
 
     public static String findConsensus() {
-        getProfile();
+        getProfile(k);
         double maxProb = 0;
         String consensus = "";
         char base = ' ';
@@ -97,7 +97,6 @@ public class Celilmete_Caglasen {
         System.out.println("---------");
     }
 
-
     public static int gibbsSampler(int k){
         getRandomMotif(k);
         String[] bestMotifs = motifs.clone();
@@ -138,9 +137,6 @@ public class Celilmete_Caglasen {
 
         }
     }
-
-
-
 
     private static void updateMotifInTheDeletedLine() {
         int index = (int)bestProbabilityAndIndexOfDeletedLine[1];
@@ -305,7 +301,7 @@ public class Celilmete_Caglasen {
             String[] tempMotifs = motifs.clone();
             int tempScore = 99999;
             while (true) {
-                getProfile();
+                getProfile(k);
                 getBestKMers(k);
                 score = score();
                 if (score < tempScore) {
@@ -351,15 +347,15 @@ public class Celilmete_Caglasen {
 
     /***********************************************
      * This function calculates the profile matrix */
-    public static void getProfile() {
-        profile = new double[4][10];
-        for (int i = 0; i < 10; i++) {
+    public static void getProfile(int k) {
+        profile = new double[4][k];
+        for (int i = 0; i < k; i++) {
             for (int j = 0; j < 10; j++) {
                 switch (motifs[j].charAt(i)) {
-                    case 'A' -> profile[0][i] += 0.1;
-                    case 'C' -> profile[1][i] += 0.1;
-                    case 'G' -> profile[2][i] += 0.1;
-                    case 'T' -> profile[3][i] += 0.1;
+                    case 'A' -> profile[0][i] += 1.0/k;
+                    case 'C' -> profile[1][i] += 1.0/k;
+                    case 'G' -> profile[2][i] += 1.0/k;
+                    case 'T' -> profile[3][i] += 1.0/k;
                 }
 
             }
@@ -399,7 +395,6 @@ public class Celilmete_Caglasen {
         }
     }
 
-
     /************************************************************************
      * This function gets motifs starting from random positions in each line */
     public static void getRandomMotif(int k) {
@@ -409,7 +404,7 @@ public class Celilmete_Caglasen {
 
         for (int i = 0; i < 10; i++) {
             position = random.nextInt(range);
-            motifs[i] = gens[i].substring(position,position+10);
+            motifs[i] = gens[i].substring(position,position+k);
         }
     }
 
