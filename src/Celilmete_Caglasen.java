@@ -23,6 +23,7 @@ public class Celilmete_Caglasen {
     public static double[][] bestProbabilities= new double[10][2];
 
     public static int[][] countMatrix = new int[4][10];
+    public static int gibbsScore;
 
     public static void main(String args[]){
 
@@ -78,7 +79,9 @@ public class Celilmete_Caglasen {
 
 
     public static void gibbsSampler(int k){
+        int currScore=9999;
         while (true){
+
             getRandomMotif(k);
             emptyOneRandomLine();
             printGibbsMotifs();
@@ -99,7 +102,13 @@ public class Celilmete_Caglasen {
             findBestProbabilities();
             printBestProbabilities();
             updateMotifInTheDeletedLine();
-            //calculateScore();
+            gibbsScore=score();
+            if(gibbsScore<currScore){
+                currScore=gibbsScore;
+                continue;
+            }else{
+                break;
+            }
         }
     }
 
