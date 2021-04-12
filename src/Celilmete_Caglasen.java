@@ -31,13 +31,17 @@ public class Celilmete_Caglasen {
         createFile();
         writeRandomBasesToFile();
         readGens();
-        System.out.println("Randomized MS Score: "+randomizedMotifSearch(k));
+        System.out.println("************************************************************************");
+        System.out.println("Randomized Motif Seach Score: "+randomizedMotifSearch(k));
+        System.out.println("Randomized Motif Search Consensus: "+findConsensus());
+        System.out.println("Best motifs found:");
         printMotifs();
-        System.out.println("Randomized MS Consensus: "+findConsensus());
 
-        System.out.println("Gibbs Sampler:");
-        System.out.println("Gibbs Score: "+gibbsSampler(k));
-        System.out.println("Gibbs Consensus: "+findConsensus());
+        System.out.println("Gibbs Sampler Score: "+gibbsSampler(k));
+        System.out.println("Gibbs Sampler Consensus: "+findConsensus());
+        System.out.println("Best motifs found:");
+        printMotifs();
+        System.out.println("************************************************************************");
     }
 
     public static String findConsensus() {
@@ -493,7 +497,7 @@ public class Celilmete_Caglasen {
      ****************************************************************************************/
     public static void createFile(){
         try {
-            file = new File("randomMotif.txt");
+            file = new File("randomDNAString.txt");
             if (file.createNewFile()) {
                 System.out.println("File created: " + file.getName());
             } else {
@@ -574,6 +578,11 @@ public class Celilmete_Caglasen {
                 stringBuilder.setCharAt(randomPosition, randomBase);
             }
             mutatedKMerStrings[i]=stringBuilder.toString();
+        }
+
+        System.out.println("mutated strings:");
+        for (int i = 0; i <mutatedKMerStrings.length ; i++) {
+            System.out.println(mutatedKMerStrings[i]);
         }
 
 
