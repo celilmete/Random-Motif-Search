@@ -29,7 +29,7 @@ public class Celilmete_Caglasen {
     public static void main(String args[]){
 
         createFile();
-        writeRandomBasesToFile();
+//        writeRandomBasesToFile();
         readGens();
         System.out.println("Randomized MS Score: "+randomizedMotifSearch(k));
         printMotifs();
@@ -101,19 +101,19 @@ public class Celilmete_Caglasen {
     public static int gibbsSampler(int k){
 
         getRandomMotif(k);
-        int bestScore=score();
+        int bestScore=score(k);
         int count = 1;
 
         while(true){
             emptyOneRandomLine();
-            getCountMatrix();
+            getCountMatrix(k);
             applyLaplace();
             generateProfileMatrix();
             putTheDeletedLineBackToMotifMatrix();
             calculateKMerProbabilities();
             findBestProbabilities();
-            updateMotifInTheDeletedLine();
-            int tempScore=score();
+            updateMotifInTheDeletedLine(k);
+            int tempScore=score(k);
             if(tempScore<bestScore){
                 bestScore=tempScore;
                 count=1;
@@ -171,9 +171,9 @@ public class Celilmete_Caglasen {
 
     }
 
-    private static void updateMotifInTheDeletedLine() {
+    private static void updateMotifInTheDeletedLine(int k) {
         int index = bestProbabilityIndex;
-        motifs[randLineIndex]= gens[randLineIndex].substring(index,index+10);
+        motifs[randLineIndex]= gens[randLineIndex].substring(index,index+k);
     }
 
     private static void putTheDeletedLineBackToMotifMatrix() {
@@ -311,9 +311,9 @@ public class Celilmete_Caglasen {
 
     }
 
-    public static void getCountMatrix() {
-        countMatrix = new int[4][10];
-        for (int i = 0; i < 10; i++) {
+    public static void getCountMatrix(int k) {
+        countMatrix = new int[4][k];
+        for (int i = 0; i < k; i++) {
             for (int j = 0; j < 10; j++) {
                 if(j==randLineIndex) continue;
                 switch (motifs[j].charAt(i)) {
@@ -329,7 +329,7 @@ public class Celilmete_Caglasen {
     public static int randomizedMotifSearch(int k) {
         getRandomMotif(k);
         String[] bestMotifs = motifs.clone();
-        int bestScore = score();
+        int bestScore = score(k);
         int score;
         int count = 1;
         while (true){
@@ -339,7 +339,7 @@ public class Celilmete_Caglasen {
             while (true) {
                 getProfile(k);
                 getBestKMers(k);
-                score = score();
+                score = score(k);
                 if (score < tempScore) {
                     tempMotifs = motifs.clone();
                     tempScore = score;
@@ -388,10 +388,10 @@ public class Celilmete_Caglasen {
         for (int i = 0; i < k; i++) {
             for (int j = 0; j < 10; j++) {
                 switch (motifs[j].charAt(i)) {
-                    case 'A' -> profile[0][i] += 1.0/k;
-                    case 'C' -> profile[1][i] += 1.0/k;
-                    case 'G' -> profile[2][i] += 1.0/k;
-                    case 'T' -> profile[3][i] += 1.0/k;
+                    case 'A' -> profile[0][i] += 1.0/10;
+                    case 'C' -> profile[1][i] += 1.0/10;
+                    case 'G' -> profile[2][i] += 1.0/10;
+                    case 'T' -> profile[3][i] += 1.0/10;
                 }
 
             }
@@ -444,12 +444,12 @@ public class Celilmete_Caglasen {
         }
     }
 
-    public static int score() {
+    public static int score(int k) {
         int score = 0;
-        for (int i = 0; i < motifs.length; i++) {
+        for (int i = 0; i < k; i++) {
             ArrayList<Integer> counts = new ArrayList<>();
             int numa = 0, numc = 0, numg = 0, numt = 0;
-            for (int j = 0; j < motifs[i].length(); j++) {
+            for (int j = 0; j < motifs.length; j++) {
                 switch (motifs[j].charAt(i)) {
                     case 'A' -> numa++;
                     case 'C' -> numc++;
