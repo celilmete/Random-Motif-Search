@@ -139,6 +139,7 @@ public class Celilmete_Caglasen {
         }
     }
 
+    //This function updates the motif with the newly received better motif with higher probability
     private static void updateMotifInTheDeletedLine(int k) {
         int index = bestProbabilityIndex;
         motifs[randLineIndex]= gens[randLineIndex].substring(index,index+k);
