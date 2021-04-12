@@ -258,8 +258,9 @@ public class Celilmete_Caglasen {
         }
     }
 
-    //If there is any 0 in the counts matrix, we increase all values by 1
-    //This is also called as Laplace's Rule of Succession
+    /*If there is any 0 in the counts matrix, we increase all values by 1
+      This is also called as Laplace's Rule of Succession
+     */
     private static void applyLaplace() {
         boolean zeroExistInTheCurrColumn=false;
 
@@ -292,6 +293,7 @@ public class Celilmete_Caglasen {
 
     }
 
+    //This function generates the count matrix
     public static void getCountMatrix(int k) {
         countMatrix = new int[4][10];
         for (int i = 0; i < 10; i++) {
@@ -382,10 +384,12 @@ public class Celilmete_Caglasen {
 
     }
 
+    //Converts base to index
     public static int baseToIndex(char base) {
         return "ACGT".indexOf(base);
     }
 
+    //Converts index to base
     public static char indexToBase(int i) {
         return "ACGT".charAt(i);
     }
