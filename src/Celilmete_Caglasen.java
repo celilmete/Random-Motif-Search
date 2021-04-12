@@ -111,6 +111,8 @@ public class Celilmete_Caglasen {
 
     /*
     This function runs gibbs sampler algorithm
+    In an infinite loop we apply the algorithm, we stop after some number of predefined iterations
+    In each iterations we check whether the score is improved or not
      */
     public static int gibbsSampler(int k){
 
