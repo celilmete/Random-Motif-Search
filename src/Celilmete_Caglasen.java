@@ -64,6 +64,7 @@ public class Celilmete_Caglasen {
         return consensus;
     }
 
+    //This function prints the profile matrix
     public static void printProfile() {
         for (int i = 0; i < profile.length; i++) {
             for (int j = 0; j < profile[i].length; j++) {
@@ -107,6 +108,10 @@ public class Celilmete_Caglasen {
         System.out.println("---------");
     }
 
+
+    /*
+    This function runs gibbs sampler algorithm
+     */
     public static int gibbsSampler(int k){
 
         getRandomMotif(k);
@@ -123,13 +128,13 @@ public class Celilmete_Caglasen {
             findBestProbabilities();
             updateMotifInTheDeletedLine(k);
             int tempScore=score(k);
-            if(tempScore<bestScore){
+            if(tempScore<bestScore){                //if the new score is better than the one we have, assign it to bestScore
                 bestScore=tempScore;
                 count=1;
-            }else if(count%150==0){
+            }else if(count%150==0){                 //after some number of iterations the algorithm will stop
                 return bestScore;
             }else{
-                count++;
+                count++;                            //increase the number of iterations
             }
         }
     }
