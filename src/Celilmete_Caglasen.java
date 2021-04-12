@@ -10,21 +10,19 @@ public class Celilmete_Caglasen {
 
     public static String bases="ATGC";
     public static File file;
-    public static String[] gens = new String[10];
-    public static String[] motifs = new String[10];
-    public static double[][] profile = new double[4][k];
-    public static double[][] profile_Gibbs = new double[4][k];
-    public static int randLineIndex;
-    public static String deletedLine;
-    public static int bestProbabilityIndex;
-    public static double[] probabilitiesOfKMersOfTheDeletedLine =new double[500-k+1];
-    public static double[] bestProbabilityAndIndexOfDeletedLine =new double[2];
+    public static String[] gens = new String[10];               //includes the input file lines as a string array
+    public static String[] motifs = new String[10];             //selected motifs as a string array
+    public static double[][] profile = new double[4][k];        //profile matrix
+    public static double[][] profile_Gibbs = new double[4][k];  //gibbs profile matrix
+    public static int[][] countMatrix = new int[4][10];         //gibbs count matrix
+    public static int randLineIndex;                            //index of the randomly deleted line
+    public static String deletedLine;                           //DNA string of deleted line
+    public static int bestProbabilityIndex;                     //index of the k-mer which has highest probability
+    public static double[] probabilitiesOfKMersOfTheDeletedLine =new double[500-k+1];   //Matrix that stores probabilies of the deleted line
+    public static double[] bestProbabilityAndIndexOfDeletedLine =new double[2];         //Best kmer probability of the deleted line and its index in the gens array
+    public static double[][] probabilitiesOfKMersMatrix =new double[10][500-k+1];       //Matrix that stores probabilities of the kmers
+    public static double[][] bestProbabilities= new double[10][2];                      //Matrix that stores the best probabilities of the kmers
 
-    public static double[][] probabilitiesOfKMersMatrix =new double[10][500-k+1];
-    public static double[][] bestProbabilities= new double[10][2];
-
-    public static int[][] countMatrix = new int[4][10];
-    public static int gibbsScore;
 
     public static void main(String args[]){
 
