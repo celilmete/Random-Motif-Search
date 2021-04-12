@@ -6,7 +6,7 @@ import java.util.*;
 
 public class Celilmete_Caglasen {
 
-    public static int k = 10;
+    public static int k = 11;
 
     public static String bases="ATGC";
     public static File file;
@@ -44,13 +44,15 @@ public class Celilmete_Caglasen {
         System.out.println("************************************************************************");
     }
 
-
+    /**********************************************************
+    * This function finds a consensus string from the motifs */
     public static String findConsensus() {
         getProfile(k);
         double maxProb = 0;
         String consensus = "";
         char base = ' ';
 
+        // get the most base with highest probabity and add it to string
         for (int i = 0; i < profile[0].length; i++) {
             for (int j = 0; j < profile.length; j++) {
                 if (profile[j][i] > maxProb) {
@@ -97,6 +99,8 @@ public class Celilmete_Caglasen {
         System.out.println("---------");
     }
 
+    /************************************************
+    * this function prints the motifs to the screen */
     public static void printMotifs() {
         System.out.println("---------");
         for (int i = 0; i < motifs.length; i++) {
@@ -108,19 +112,19 @@ public class Celilmete_Caglasen {
     public static int gibbsSampler(int k){
 
         getRandomMotif(k);
-        int bestScore=score();
+        int bestScore=score(k);
         int count = 1;
 
         while(true){
             emptyOneRandomLine();
-            getCountMatrix();
+            getCountMatrix(k);
             applyLaplace();
             generateProfileMatrix();
             putTheDeletedLineBackToMotifMatrix();
             calculateKMerProbabilities();
             findBestProbabilities();
-            updateMotifInTheDeletedLine();
-            int tempScore=score();
+            updateMotifInTheDeletedLine(k);
+            int tempScore=score(k);
             if(tempScore<bestScore){
                 bestScore=tempScore;
                 count=1;
@@ -130,57 +134,11 @@ public class Celilmete_Caglasen {
                 count++;
             }
         }
-
-
-
-        /*
-        getRandomMotif(k);
-        String[] bestMotifs = motifs.clone();
-        int bestScore=score();
-        int score;
-        int count = 1;
-
-        while (true){
-            emptyOneRandomLine();
-            String[] tempMotifs = motifs.clone();
-            int tempScore=99999;
-            while (true){
-                getCountMatrix();
-                applyLaplace();
-                generateProfileMatrix();
-                putTheDeletedLineBackToMotifMatrix();
-                calculateKMerProbabilities();
-                findBestProbabilities();
-                updateMotifInTheDeletedLine();
-                score=score();
-                if(score<tempScore){
-                    tempMotifs = motifs.clone();
-                    tempScore = score;
-                }else {
-                    break;
-                }
-            }
-            if(tempScore<bestScore){
-                bestScore=tempScore;
-                bestMotifs = tempMotifs.clone();
-                count=1;
-            }else if(count%150==0){
-                return bestScore;
-            }else{
-                motifs = bestMotifs.clone();
-                count++;
-            }
-
-        }
-
-         */
-
-
     }
 
-    private static void updateMotifInTheDeletedLine() {
+    private static void updateMotifInTheDeletedLine(int k) {
         int index = bestProbabilityIndex;
-        motifs[randLineIndex]= gens[randLineIndex].substring(index,index+10);
+        motifs[randLineIndex]= gens[randLineIndex].substring(index,index+k);
     }
 
     /*This function is used before calculating the k-mer probability values
@@ -330,8 +288,7 @@ public class Celilmete_Caglasen {
 
     }
 
-    //This function generates count matrix
-    public static void getCountMatrix() {
+    public static void getCountMatrix(int k) {
         countMatrix = new int[4][10];
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
@@ -346,39 +303,41 @@ public class Celilmete_Caglasen {
         }
     }
 
+    /***********************************************************
+    * this function runs the algorithm randomized motif search */
     public static int randomizedMotifSearch(int k) {
         getRandomMotif(k);
         String[] bestMotifs = motifs.clone();
-        int bestScore = score();
+        int bestScore = score(k);
         int score;
         int count = 1;
         while (true){
-            getRandomMotif(k);
-            String[] tempMotifs = motifs.clone();
+            getRandomMotif(k); // get random motifs
+            String[] tempMotifs = motifs.clone(); //
             int tempScore = 99999;
-            while (true) {
-                getProfile(k);
-                getBestKMers(k);
-                score = score();
-                if (score < tempScore) {
-                    tempMotifs = motifs.clone();
+            while (true) { // in the inner while loop we find the local optimas
+                getProfile(k); // calculate the profile matrix
+                getBestKMers(k); // get the motifs according to profile
+                score = score(k); // calculate the score
+                if (score < tempScore) { // if the score is less than tempScore then these motifs are better
+                    tempMotifs = motifs.clone(); // get the motifs as tempMotifs
                     tempScore = score;
                 }
                 else {
-                    break;
+                    break; // else break the loop outer while loop will run
                 }
             }
-            if(tempScore < bestScore) {
-                bestScore = tempScore;
-                bestMotifs = tempMotifs.clone();
-                count = 1;
+            if(tempScore < bestScore) { // tempScore comes from the inner while loop it keeps the best values
+                bestScore = tempScore;// reached in the loop if the tempScore is less than bestScore than we say
+                bestMotifs = tempMotifs.clone(); // previous one was a local optima and we keep this one
+                count = 1; // we reset the count
             }
-            else if (count % 50 == 0) {
-                return bestScore;
-            }
+            else if (count % 50 == 0) { // if the tempScore was not less we look at the count
+                return bestScore; // this way if we couldn't improve the bestScore 50 times we say that's enough
+            }                     // we cant improve any further
             else {
-                motifs = bestMotifs.clone();
-                count++;
+                motifs = bestMotifs.clone(); // else we set the motifs as our bestMotifs
+                count++;                    // motifs is the variable we will use outside
             }
         }
 
@@ -408,10 +367,10 @@ public class Celilmete_Caglasen {
         for (int i = 0; i < k; i++) {
             for (int j = 0; j < 10; j++) {
                 switch (motifs[j].charAt(i)) {
-                    case 'A' -> profile[0][i] += 1.0/k;
-                    case 'C' -> profile[1][i] += 1.0/k;
-                    case 'G' -> profile[2][i] += 1.0/k;
-                    case 'T' -> profile[3][i] += 1.0/k;
+                    case 'A' -> profile[0][i] += 1.0/10;
+                    case 'C' -> profile[1][i] += 1.0/10;
+                    case 'G' -> profile[2][i] += 1.0/10;
+                    case 'T' -> profile[3][i] += 1.0/10;
                 }
 
             }
@@ -427,6 +386,9 @@ public class Celilmete_Caglasen {
         return "ACGT".charAt(i);
     }
 
+    /***************************************************************
+     * This function calculates the probabity of the given k-mer   *
+     * according the profile                                       */
     public static double getProb(int k, String kmer) {
         double prob = 1;
         for (int i = 0; i < kmer.length(); i++) {
@@ -435,6 +397,8 @@ public class Celilmete_Caglasen {
         return prob;
     }
 
+    /***********************************************
+     * This function gets the most probable k-mers */
     public static void  getBestKMers(int k) {
         for (int i = 0; i < gens.length; i++) {
             double bestVal = -1;
@@ -464,12 +428,14 @@ public class Celilmete_Caglasen {
         }
     }
 
-    public static int score() {
+    /**************************************************
+     * this is the function that calculates the score */
+    public static int score(int k) {
         int score = 0;
-        for (int i = 0; i < motifs.length; i++) {
+        for (int i = 0; i < k; i++) {
             ArrayList<Integer> counts = new ArrayList<>();
             int numa = 0, numc = 0, numg = 0, numt = 0;
-            for (int j = 0; j < motifs[i].length(); j++) {
+            for (int j = 0; j < motifs.length; j++) {
                 switch (motifs[j].charAt(i)) {
                     case 'A' -> numa++;
                     case 'C' -> numc++;
