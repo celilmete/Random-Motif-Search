@@ -6,7 +6,7 @@ import java.util.*;
 
 public class Celilmete_Caglasen {
 
-    public static int k = 10;
+    public static int k = 11;
 
     public static String bases="ATGC";
     public static File file;
@@ -29,7 +29,7 @@ public class Celilmete_Caglasen {
     public static void main(String args[]){
 
         createFile();
-//        writeRandomBasesToFile();
+        writeRandomBasesToFile();
         readGens();
         System.out.println("************************************************************************");
         System.out.println("Randomized Motif Seach Score: "+randomizedMotifSearch(k));
@@ -44,12 +44,15 @@ public class Celilmete_Caglasen {
         System.out.println("************************************************************************");
     }
 
+    /**********************************************************
+    * This function finds a consensus string from the motifs */
     public static String findConsensus() {
         getProfile(k);
         double maxProb = 0;
         String consensus = "";
         char base = ' ';
 
+        // get the most base with highest probabity and add it to string
         for (int i = 0; i < profile[0].length; i++) {
             for (int j = 0; j < profile.length; j++) {
                 if (profile[j][i] > maxProb) {
@@ -94,6 +97,8 @@ public class Celilmete_Caglasen {
         System.out.println("---------");
     }
 
+    /************************************************
+    * this function prints the motifs to the screen */
     public static void printMotifs() {
         System.out.println("---------");
         for (int i = 0; i < motifs.length; i++) {
@@ -330,6 +335,8 @@ public class Celilmete_Caglasen {
         }
     }
 
+    /***********************************************************
+    * this function runs the algorithm randomized motif search */
     public static int randomizedMotifSearch(int k) {
         getRandomMotif(k);
         String[] bestMotifs = motifs.clone();
@@ -337,32 +344,32 @@ public class Celilmete_Caglasen {
         int score;
         int count = 1;
         while (true){
-            getRandomMotif(k);
-            String[] tempMotifs = motifs.clone();
+            getRandomMotif(k); // get random motifs
+            String[] tempMotifs = motifs.clone(); //
             int tempScore = 99999;
-            while (true) {
-                getProfile(k);
-                getBestKMers(k);
-                score = score(k);
-                if (score < tempScore) {
-                    tempMotifs = motifs.clone();
+            while (true) { // in the inner while loop we find the local optimas
+                getProfile(k); // calculate the profile matrix
+                getBestKMers(k); // get the motifs according to profile
+                score = score(k); // calculate the score
+                if (score < tempScore) { // if the score is less than tempScore then these motifs are better
+                    tempMotifs = motifs.clone(); // get the motifs as tempMotifs
                     tempScore = score;
                 }
                 else {
-                    break;
+                    break; // else break the loop outer while loop will run
                 }
             }
-            if(tempScore < bestScore) {
-                bestScore = tempScore;
-                bestMotifs = tempMotifs.clone();
-                count = 1;
+            if(tempScore < bestScore) { // tempScore comes from the inner while loop it keeps the best values
+                bestScore = tempScore;// reached in the loop if the tempScore is less than bestScore than we say
+                bestMotifs = tempMotifs.clone(); // previous one was a local optima and we keep this one
+                count = 1; // we reset the count
             }
-            else if (count % 50 == 0) {
-                return bestScore;
-            }
+            else if (count % 50 == 0) { // if the tempScore was not less we look at the count
+                return bestScore; // this way if we couldn't improve the bestScore 50 times we say that's enough
+            }                     // we cant improve any further
             else {
-                motifs = bestMotifs.clone();
-                count++;
+                motifs = bestMotifs.clone(); // else we set the motifs as our bestMotifs
+                count++;                    // motifs is the variable we will use outside
             }
         }
 
@@ -411,6 +418,9 @@ public class Celilmete_Caglasen {
         return "ACGT".charAt(i);
     }
 
+    /***************************************************************
+     * This function calculates the probabity of the given k-mer   *
+     * according the profile                                       */
     public static double getProb(int k, String kmer) {
         double prob = 1;
         for (int i = 0; i < kmer.length(); i++) {
@@ -419,6 +429,8 @@ public class Celilmete_Caglasen {
         return prob;
     }
 
+    /***********************************************
+     * This function gets the most probable k-mers */
     public static void  getBestKMers(int k) {
         for (int i = 0; i < gens.length; i++) {
             double bestVal = -1;
@@ -448,6 +460,8 @@ public class Celilmete_Caglasen {
         }
     }
 
+    /**************************************************
+     * this is the function that calculates the score */
     public static int score(int k) {
         int score = 0;
         for (int i = 0; i < k; i++) {
