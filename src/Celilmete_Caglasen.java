@@ -44,6 +44,7 @@ public class Celilmete_Caglasen {
         System.out.println("************************************************************************");
     }
 
+
     public static String findConsensus() {
         getProfile(k);
         double maxProb = 0;
@@ -73,6 +74,7 @@ public class Celilmete_Caglasen {
     }
 
 
+    //This function prints count matrix
     public static void printCounts() {
         String genes="ACGT";
         for (int i = 0; i < countMatrix.length; i++) {
@@ -85,6 +87,7 @@ public class Celilmete_Caglasen {
         System.out.println();
     }
 
+    //This function prints Gibbs Motifs with excluding the deleted line
     public static void printGibbsMotifs() {
         System.out.println("---------");
         for (int i = 0; i < motifs.length; i++) {
@@ -180,10 +183,14 @@ public class Celilmete_Caglasen {
         motifs[randLineIndex]= gens[randLineIndex].substring(index,index+10);
     }
 
+    /*This function is used before calculating the k-mer probability values
+      To not to come across with null pointer exceptions
+     */
     private static void putTheDeletedLineBackToMotifMatrix() {
         gens[randLineIndex]=deletedLine;
     }
 
+    //This function finds the best probability of k-mers in the deleted line
     private static void findBestProbabilityOfTheDeletedLine() {
         for (int i = 0; i < probabilitiesOfKMersOfTheDeletedLine.length ; i++) {
             double currBestProb = probabilitiesOfKMersOfTheDeletedLine[i];
@@ -197,6 +204,7 @@ public class Celilmete_Caglasen {
                 "Index of this probability: " +bestProbabilityAndIndexOfDeletedLine[1]);
     }
 
+    //This function prints probabilities of k-mers in the deleted line
     private static void printKMerProbabilitiesOfTheDeletedLine() {
 
         for (int j = 0; j < probabilitiesOfKMersOfTheDeletedLine.length; j++) {
@@ -206,6 +214,7 @@ public class Celilmete_Caglasen {
 
     }
 
+    //This function calculates probabilities of k-mers of the deleted line
     private static void calculateKMerProbabilityOfDeletedLine() {
         double probOfKmer=1;
             for (int j = 0; j < probabilitiesOfKMersOfTheDeletedLine.length ; j++) {
@@ -223,12 +232,14 @@ public class Celilmete_Caglasen {
 
     }
 
+    //This function prints best k-mers probabilities of each 10 line
     private static void printBestProbabilities() {
         for (int i = 0; i <bestProbabilities.length ; i++) {
             System.out.println(bestProbabilities[i][0] +" at index " +bestProbabilities[i][1]);
         }
     }
 
+    //This function finds the best probability of k-mers in all lines
     private static void findBestProbabilities() {
         for (int i = 0; i < probabilitiesOfKMersMatrix.length ; i++) {
             double currBestProb = probabilitiesOfKMersMatrix[i][0];
@@ -246,6 +257,7 @@ public class Celilmete_Caglasen {
         }
     }
 
+    //This function prints probabilities of k-mers of all lines
     private static void printKMerProbabilities() {
         for (int i = 0; i < probabilitiesOfKMersMatrix.length ; i++) {
             for (int j = 0; j < probabilitiesOfKMersMatrix[0].length; j++) {
@@ -255,6 +267,7 @@ public class Celilmete_Caglasen {
         }
     }
 
+    //This function calculates probabilities of k-mers of all lines
     private static void calculateKMerProbabilities() {
         double probOfKmer=1;
         for (int i = 0; i < probabilitiesOfKMersMatrix.length ; i++) {
@@ -274,16 +287,17 @@ public class Celilmete_Caglasen {
         }
     }
 
+    //This function generates profile matrix from count matrix
     private static void generateProfileMatrix() {
         for (int i = 0; i <countMatrix.length; i++) { //countMatrix[i].length=number of columns
             for (int j = 0; j < countMatrix[0].length; j++) {
                 profile_Gibbs[i][j]=countMatrix[i][j]*0.1;
-                //System.out.printf("%.1f ", profile_Gibbs[i][j]);
             }
-            //System.out.println();
         }
     }
 
+    //If there is any 0 in the counts matrix, we increase all values by 1
+    //This is also called as Laplace's Rule of Succession
     private static void applyLaplace() {
         boolean zeroExistInTheCurrColumn=false;
 
@@ -307,6 +321,7 @@ public class Celilmete_Caglasen {
 
     }
 
+    //This function empties out one random line from the gens array
     private static void emptyOneRandomLine() {
         Random random = new Random();
         randLineIndex = random.nextInt(10);
@@ -315,6 +330,7 @@ public class Celilmete_Caglasen {
 
     }
 
+    //This function generates count matrix
     public static void getCountMatrix() {
         countMatrix = new int[4][10];
         for (int i = 0; i < 10; i++) {
@@ -557,7 +573,6 @@ public class Celilmete_Caglasen {
                 mutatedKMerStrings[i]=mutatedKMerStrings[i].concat(""+bases.charAt(r.nextInt(bases.length())));
             }
         }
-        System.out.println("o: "+mutatedKMerStrings[0]);
         System.out.println("Original String: " + mutatedKMerStrings[0]);
         StringBuilder stringBuilder = null;
 
